@@ -1,13 +1,7 @@
 from django.db import models
-
+from datetime import datetime
 # Create your models here.
-class Client(models.Model):
-    first_name=models.CharField(max_length=30)
-    last_name=models.CharField(max_length=30)
-    e_mail=models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
-
-class Employee(models.Model):
+class User(models.Model):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     email = models.EmailField(unique=True)
@@ -17,9 +11,16 @@ class Employee(models.Model):
     # Required fields for custom user models
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
 
-class Tasks(models.Model):
+class Service(models.Model):
     title = models.CharField(max_length=100)
     description = models.CharField(blank=True)
-    timestamp = models.DurationField()
-    assigned_to = models.ForeignKey(Employee,on_delete=models.CASCADE, related_name='tasks')
+    timestart = models.DateTimeField(default=datetime.now, blank=True)
+    timestop = models.DateTimeField(default=datetime.now, blank=True)
+    assigned_to = models.ForeignKey(User,on_delete=models.CASCADE, related_name='tasks')
+    def __str__(self):
+        formatted_date_start = self.timestart.strftime("%Y-%m-%d %H:%M")
+        formatted_date_end = self.timestop.strftime("%H:%M")
+        return f"{self.title} {formatted_date_start} to {formatted_date_end}"
