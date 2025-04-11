@@ -1,6 +1,7 @@
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
 
+#This file crates custom login function using email to log in account, it also checks if account exists and if password is correct
 class EmailBackend(ModelBackend):
     def authenticate(self, request, email = None, password = None, **kwargs):
         UserModel= get_user_model()

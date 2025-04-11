@@ -3,7 +3,7 @@ from datetime import datetime
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 # Create your models here.
 
-#Created class to create users later in forms
+#Created class to create users in forms
 class UserManager(BaseUserManager):
     def creating_user(self, email, password=None, **extra_fields):
         if not email:
@@ -39,6 +39,7 @@ class MyUser(AbstractBaseUser):
     REQUIRED_FIELDS = ['first_name', 'last_name',]
     objects=UserManager()
 
+    # Added option to change permissions
     def has_perm(self, perm, obj=None):
         return self.is_superuser
 
