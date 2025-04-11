@@ -1,5 +1,47 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
+from django.contrib.auth import login, authenticate, logout
+from django.contrib import messages
+from .forms import UserRegistrationForm
+from django.contrib.auth.decorators import login_required
+
 
 # Create your views here.
-def terminal_look(request):
-    return render(request, 'terminal.html')
+
+
+def register_user(request):
+    if request.method == 'POST':
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            user.backend = 'terminal.backends.EmailBackend'
+            login(request,user)
+            messages.success(request,"Registration succesful")
+            return redirect('home')
+        else:
+            messages.error(request,"Registration Failed")
+    else:
+        form = UserRegistrationForm()
+    return render(request, 'terminal/register.html',{'form': form})
+
+def login_user(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        user = authenticate(request, email=email, password=password)
+        if user is not None and user.is_active:
+            login(request,user)
+            messages.success(request,'Login successfull')
+            return redirect('home')
+        else:
+            messages.error(request,"Invalid email or password")
+    return render(request,'terminal/login.html')
+
+@login_required
+def logout_user(request):
+    logout(request)
+    messages.success(request, 'Logged out succesfully')
+    return redirect('login')
+
+@login_required
+def home(request):
+    return render(request,'terminal/terminal.html')
