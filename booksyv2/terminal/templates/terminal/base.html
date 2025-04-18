@@ -6,11 +6,9 @@
 </head>
 <body>
     <nav>
-        <ul>
             {% if user.is_authenticated %}
-                <li><a href="{% url 'logout' %}">Logout</a></li>
+                <a href="{% url 'logout' %}">Logout</a>
             {% endif %}
-        </ul>
     </nav>
 
     {% if messages %}

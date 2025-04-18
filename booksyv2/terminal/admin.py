@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import MyUser,Service
+from .models import MyUser,Appointment
 
 admin.site.register(MyUser)
-admin.site.register(Service)
+admin.site.register(Appointment)
