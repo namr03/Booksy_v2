@@ -5,8 +5,6 @@ from .forms import UserRegistrationForm
 from django.contrib.auth.decorators import login_required
 
 
-
-
 #Those are registration, login and logout functions
 def register_user(request):
     if request.method == 'POST':
@@ -45,3 +43,5 @@ def logout_user(request):
 @login_required
 def home(request):
     return render(request,'terminal/terminal.html')
+
+

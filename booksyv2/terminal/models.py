@@ -59,3 +59,4 @@ class Service(models.Model):
         formatted_date_start = self.timestart.strftime("%Y-%m-%d %H:%M")
         formatted_date_end = self.timestop.strftime("%H:%M")
         return f"{self.title} {formatted_date_start} to {formatted_date_end}"
+
