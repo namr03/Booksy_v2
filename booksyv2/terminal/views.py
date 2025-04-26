@@ -28,9 +28,14 @@ def login_user(request):
         password = request.POST.get('password')
         user = authenticate(request, email=email, password=password)
         if user is not None and user.is_active:
-            login(request,user)
-            messages.success(request,'Login successfull')
-            return redirect('home')
+            if user.is_superuser:
+                login(request,user)
+                messages.success(request,'Login successfull as employee')
+                return redirect('admin_home')
+            else:    
+                login(request,user)
+                messages.success(request,'Login successfull')
+                return redirect('home')
         else:
             messages.error(request,"Invalid email or password")
     return render(request,'terminal/login.html')
@@ -52,6 +57,18 @@ def home(request):
         'appointments': appointments
     }
     return render(request, 'terminal/terminal.html', context)
+
+@login_required
+def employee(request):
+    user = request.user
+    appointments = Appointment.objects.filter(user=user).order_by('day','time')
+    context = {
+        'services': SERVICE_CHOICE,
+        'times': TIME_CHOICES,
+        'today': datetime.now().date(),
+        'appointments': appointments
+    }
+    return render(request, 'terminal/employee_view.html', context)
 
 @login_required
 def booking(request):
