@@ -4,7 +4,11 @@ from django.contrib import messages
 from .forms import UserRegistrationForm
 from django.contrib.auth.decorators import login_required
 from .models import *
-from datetime import datetime
+from datetime import datetime, timedelta, date
+from calendar import HTMLCalendar
+from django.utils.safestring import mark_safe
+from django.views import generic
+import calendar
 
 #Those are registration, login and logout functions
 def register_user(request):
@@ -31,7 +35,7 @@ def login_user(request):
             if user.is_superuser:
                 login(request,user)
                 messages.success(request,'Login successfull as employee')
-                return redirect('admin_home')
+                return redirect('calendar')
             else:    
                 login(request,user)
                 messages.success(request,'Login successfull')
@@ -58,17 +62,8 @@ def home(request):
     }
     return render(request, 'terminal/terminal.html', context)
 
-@login_required
-def employee(request):
-    user = request.user
-    appointments = Appointment.objects.filter(user=user).order_by('day','time')
-    context = {
-        'services': SERVICE_CHOICE,
-        'times': TIME_CHOICES,
-        'today': datetime.now().date(),
-        'appointments': appointments
-    }
-    return render(request, 'terminal/employee_view.html', context)
+
+
 
 @login_required
 def booking(request):
@@ -120,3 +115,86 @@ def booking(request):
     }
     
     return render(request, 'terminal/terminal.html', context)
+
+#Created class for Calendar with functions that format day, week and month
+class Calendar(HTMLCalendar):
+    def __init__(self, year = None, month = None):
+        self.year= year
+        self.month= month
+        super(Calendar,self).__init__()
+    
+    def formatday(self, day, appointments):
+        d = ''
+        if day != 0:
+            appointments_per_day = appointments.filter(day__day=day)
+            for appointment in appointments_per_day:
+                d += f'''
+                        <div class="appointment">
+                            <span class="time">{appointment.time}</span>
+                            <span class="service">{appointment.service}</span>
+                            <span class="client">{appointment.user.first_name} {appointment.user.last_name}</span>
+                        </div>
+                    '''
+            return f'''
+                <td>
+                    <span class="date">{day}</span>
+                    <div class="appointments">
+                        {d}
+                    </div>
+                </td>
+            '''
+        return '<td></td>'
+    
+    def formatweek(self, theweek, appointments):
+        week = ''
+        for d,weekday in theweek:
+            week += self.formatday(d,appointments)
+        return f'<tr>{week}</tr>'
+    
+    def formatmonth(self,withyear = True):
+        appointments = Appointment.objects.filter(
+            day__year = self.year,
+            day__month = self.month
+        ).order_by('time')
+
+        cal = f'<table class="calendar">\n'
+        cal += f'{self.formatmonthname(self.year,self.month, withyear=withyear)}\n'
+        cal += f'{self.formatweekheader()}\n'
+
+        for week in self.monthdays2calendar(self.year,self.month):
+            cal += f'{self.formatweek(week, appointments)}\n'
+
+        return cal
+    #It returns actual day or first day of the month
+def get_date(req_month):
+    if req_month:
+        year, month = (int(x) for x in req_month.split('-'))
+        return date(year,month,day=1)
+    return datetime.today()
+    #it checks previous month converting month as string to be use in URL
+def prev_month(d):
+    first = d.replace(day=1)
+    prev_month = first - timedelta(days=1)
+    month = 'month=' + str(prev_month.year) + '-' + str(prev_month.month)
+    return month
+    #Same as prev but next instead of previous
+def next_month(d):
+    days_in_month = calendar.monthrange(d.year, d.month)[1]
+    last = d.replace(day=days_in_month)
+    next_month = last + timedelta(days=1)
+    month = 'month=' + str(next_month.year) + '-' + str(next_month.month)
+    return month
+#Class for viewing calendar with appointments 
+class CalendarView(generic.ListView):
+    model = Appointment
+    template_name = 'terminal/employee_view.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        d = get_date(self.request.GET.get('month', None))
+        cal = Calendar(d.year, d.month)
+        html_cal = cal.formatmonth(withyear=True)
+        context['calendar'] = mark_safe(html_cal)
+        context['prev_month'] = prev_month(d)
+        context['next_month'] = next_month(d)
+        return context
