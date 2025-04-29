@@ -49,14 +49,32 @@ class MyUser(AbstractBaseUser):
     def __str__(self):
         return self.email
 
-class Service(models.Model):
-    title = models.CharField(max_length=100)
-    description = models.CharField(blank=True)
-    timestart = models.DateTimeField(default=datetime.now, blank=True)
-    timestop = models.DateTimeField(default=datetime.now, blank=True)
-    assigned_to = models.ForeignKey(MyUser,on_delete=models.CASCADE, related_name='tasks')
-    def __str__(self):
-        formatted_date_start = self.timestart.strftime("%Y-%m-%d %H:%M")
-        formatted_date_end = self.timestop.strftime("%H:%M")
-        return f"{self.title} {formatted_date_start} to {formatted_date_end}"
+SERVICE_CHOICE = (
+    ("Manicure","Manicure"),
+    ("Pedicure","Pedicure"),
+    ("Massage","Massage"),
+    ("Hair","Hair")
+)
 
+TIME_CHOICES = (
+    ("10:00", "10:00"),
+    ("11:00", "11:00"),
+    ("12:00", "12:00"),
+    ("13:00", "13:00"),
+    ("14:00", "14:00"),
+    ("15:00", "15:00"),
+    ("16:00", "16:00"),
+    ("17:00", "17:00"),
+    ("18:00", "18:00"),
+    ("19:00", "19:00"),
+    ("20:00", "20:00"),
+)
+
+class Appointment(models.Model):
+    user= models.ForeignKey(MyUser, on_delete=models.CASCADE, null=True, blank=True)
+    service = models.CharField(max_length=100, choices=SERVICE_CHOICE, default="Manicure")
+    day = models.DateField(default=datetime.now)
+    time = models.CharField(max_length=10, choices=TIME_CHOICES, default="10:00")
+    time_ordered = models.DateTimeField(default=datetime.now,blank=True)
+    def __str__(self):
+        return f"{self.user.first_name} | day:{self.day} | time:{self.time}"
