@@ -116,6 +116,44 @@ def booking(request):
     
     return render(request, 'terminal/terminal.html', context)
 
+@login_required
+def add_appointment(request):
+    if request.method == 'POST':
+        service = request.POST.get('service')
+        day = request.POST.get('day')
+        time = request.POST.get('time')
+        
+        # Validate if service and time are in allowed choices
+        valid_services = [choice[0] for choice in SERVICE_CHOICE]
+        valid_times = [choice[0] for choice in TIME_CHOICES]
+        
+        if service not in valid_services:
+            messages.error(request, "Invalid service selected")
+            return redirect('calendar')
+            
+        if time not in valid_times:
+            messages.error(request, "Invalid time selected")
+            return redirect('calendar')
+            
+        # Check if appointment time is available
+        if Appointment.objects.filter(day=day, time=time).exists():
+            messages.error(request, "This time slot is already booked")
+            return redirect('calendar')
+            
+        # Create new appointment
+        try:
+            appointment = Appointment.objects.create(
+                user=request.user,
+                service=service,
+                day=datetime.strptime(day, '%Y-%m-%d').date(),
+                time=time,
+                time_ordered=datetime.now()
+            )
+            messages.success(request, f"Successfully booked {service} for {day} at {time}")
+        except Exception as e:
+            messages.error(request, f"Booking failed: {str(e)}")
+            
+    return redirect('calendar')
 #Created class for Calendar with functions that format day, week and month
 class Calendar(HTMLCalendar):
     def __init__(self, year = None, month = None):
@@ -136,9 +174,14 @@ class Calendar(HTMLCalendar):
                         </div>
                     '''
             return f'''
-                <td>
-                    <span class="date">{day}</span>
-                    <div class="appointments">
+                <td class = "day-cell">
+                    <div class="date-container">
+                       <span class="date">{day}</span>
+                       <button class="add-appointment-btn" onclick="showAppointmentForm('{self.year}-{self.month:02d}-{day:02d}')">
+                           +
+                       </button>
+                    </div>
+                    <div class="appointments-container">
                         {d}
                     </div>
                 </td>
