@@ -17,7 +17,26 @@
         <form id="appointmentForm" method="POST" action="{% url 'add_appointment' %}">
             {% csrf_token %}
             <input type="hidden" id="appointment_date" name="day">
-            
+                    
+            <div class="form-group">
+                <label for="first_name">First Name:</label>
+                <input type="text" id="first_name" name="first_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="last_name">Last Name:</label>
+                <input type="text" id="last_name" name="last_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number:</label>
+                <input type="tel" id="phone" name="phone" required>
+            </div>
             <div class="form-group">
                 <label for="service">Service:</label>
                 <select name="service" id="service" required>
@@ -35,6 +54,7 @@
                     {% endfor %}
                 </select>
             </div>
+
             
             <button type="submit" class="btn btn-primary">Add Appointment</button>
         </form>

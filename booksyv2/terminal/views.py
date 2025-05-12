@@ -9,6 +9,7 @@ from calendar import HTMLCalendar
 from django.utils.safestring import mark_safe
 from django.views import generic
 import calendar
+import uuid
 
 #Those are registration, login and logout functions
 def register_user(request):
@@ -122,7 +123,11 @@ def add_appointment(request):
         service = request.POST.get('service')
         day = request.POST.get('day')
         time = request.POST.get('time')
-        
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+
         # Validate if service and time are in allowed choices
         valid_services = [choice[0] for choice in SERVICE_CHOICE]
         valid_times = [choice[0] for choice in TIME_CHOICES]
@@ -139,11 +144,23 @@ def add_appointment(request):
         if Appointment.objects.filter(day=day, time=time).exists():
             messages.error(request, "This time slot is already booked")
             return redirect('calendar')
-            
+        #Check if user exists if not, it creates new user
+        try:
+            user = MyUser.objects.get(email=email)
+        except MyUser.DoesNotExist:
+            temp_password = str(uuid.uuid4())[:8]
+            user = MyUser.objects.creating_user(
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+                phone_number=phone,
+                password=temp_password,
+            )
+
         # Create new appointment
         try:
             appointment = Appointment.objects.create(
-                user=request.user,
+                user=user,
                 service=service,
                 day=datetime.strptime(day, '%Y-%m-%d').date(),
                 time=time,
@@ -240,7 +257,6 @@ class CalendarView(generic.ListView):
         context['calendar'] = mark_safe(html_cal)
         context['prev_month'] = prev_month(d)
         context['next_month'] = next_month(d)
-
         context['services'] = SERVICE_CHOICE
         context['times'] = TIME_CHOICES
         return context
