@@ -1,5 +1,94 @@
-{%extends 'terminal/base.html' %}
+{% extends 'terminal/base.html' %}
 
-{% block content %} 
+{% block content %}
+<div class="calendar-container">
+    <div class="calendar-nav">
+        <a class="btn btn-primary" href="{% url 'calendar' %}?{{ prev_month }}">Previous Month</a>
+        <a class="btn btn-primary" href="{% url 'calendar' %}?{{ next_month }}">Next Month</a>
+    </div>
+    {{ calendar }}
+</div>
 
+<!-- Modal -->
+<div id="appointmentModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Add New Appointment</h2>
+        <form id="appointmentForm" method="POST" action="{% url 'add_appointment' %}">
+            {% csrf_token %}
+            <input type="hidden" id="appointment_date" name="day">
+                    
+            <div class="form-group">
+                <label for="first_name">First Name:</label>
+                <input type="text" id="first_name" name="first_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="last_name">Last Name:</label>
+                <input type="text" id="last_name" name="last_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number:</label>
+                <input type="tel" id="phone" name="phone" required>
+            </div>
+            <div class="form-group">
+                <label for="service">Service:</label>
+                <select name="service" id="service" required>
+                    {% for service_code, service_name in services %}
+                        <option value="{{ service_code }}">{{ service_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="time">Time:</label>
+                <select name="time" id="time" required>
+                    {% for time_code, time_display in times %}
+                        <option value="{{ time_code }}">{{ time_display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            
+            <button type="submit" class="btn btn-primary">Add Appointment</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Define the function globally
+    function showAppointmentForm(date) {
+        const modal = document.getElementById('appointmentModal');
+        const dateInput = document.getElementById('appointment_date');
+        dateInput.value = date;
+        modal.style.display = "block";
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Close button handler
+        const closeBtn = document.querySelector('.close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                document.getElementById('appointmentModal').style.display = "none";
+            });
+        }
+
+        // Click outside modal to close
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('appointmentModal');
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        });
+    });
+    
+</script>
 {% endblock %}

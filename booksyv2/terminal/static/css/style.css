@@ -1,0 +1,178 @@
+.calendar {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background-color: #ffffff;
+}
+
+.calendar thead tr th {
+    background-color: #f8f9fa !important;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    border: 1px solid #dee2e6;
+}
+
+.calendar tbody td {
+    border: 1px solid #dee2e6;
+    height: 120px;
+    width: 14.28%;
+    padding: 10px;
+    vertical-align: top;
+    background-color: #ffffff !important;
+    position: relative;
+}
+
+.calendar tbody td.past-day {
+    background-color: #f0f0f0 !important;
+}
+
+.past-day .appointment {
+    opacity: 0.6;
+    background-color: #e9ecef !important;
+}
+
+.past-day .date,
+.past-day .time,
+.past-day .service,
+.past-day .client {
+    color: #999 !important;
+    text-decoration: line-through;
+}
+
+.past-day .add-appointment-btn {
+    display: none !important;
+}
+
+.date {
+    display: block;
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.appointments {
+    font-size: 0.9em;
+}
+
+.appointment {
+    background: #e3f2fd;
+    border-radius: 4px;
+    padding: 5px;
+    margin-bottom: 3px;
+}
+
+.time {
+    font-weight: bold;
+    color: #0d47a1;
+}
+
+.service {
+    margin-left: 5px;
+    color: #1976d2;
+}
+.client{
+    margin-left: 5px;
+    color: #1976d2;
+}
+
+.calendar-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.calendar-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    color: #aaa;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: black;
+}
+
+.add-appointment-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.add-appointment-btn:hover {
+    background: #0056b3;
+}
+
+.day {
+    position: relative;
+    min-height: 100px;
+}
+
+.day-cell {
+    position: relative;
+    padding: 10px;
+    min-height: 120px;
+    vertical-align: top;
+}
+
+
+.date-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.appointments-container {
+    margin-top: 5px;
+}
