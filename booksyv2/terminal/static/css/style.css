@@ -2,21 +2,46 @@
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
+    background-color: #ffffff;
 }
 
-.calendar th {
-    background: #f8f9fa;
+.calendar thead tr th {
+    background-color: #f8f9fa !important;
     padding: 10px;
     text-align: center;
     font-weight: bold;
+    border: 1px solid #dee2e6;
 }
 
-.calendar td {
+.calendar tbody td {
     border: 1px solid #dee2e6;
     height: 120px;
-    width: 300px;
+    width: 14.28%;
     padding: 10px;
     vertical-align: top;
+    background-color: #ffffff !important;
+    position: relative;
+}
+
+.calendar tbody td.past-day {
+    background-color: #f0f0f0 !important;
+}
+
+.past-day .appointment {
+    opacity: 0.6;
+    background-color: #e9ecef !important;
+}
+
+.past-day .date,
+.past-day .time,
+.past-day .service,
+.past-day .client {
+    color: #999 !important;
+    text-decoration: line-through;
+}
+
+.past-day .add-appointment-btn {
+    display: none !important;
 }
 
 .date {
@@ -139,6 +164,7 @@
     min-height: 120px;
     vertical-align: top;
 }
+
 
 .date-container {
     display: flex;

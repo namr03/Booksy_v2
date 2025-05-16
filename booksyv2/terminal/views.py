@@ -181,6 +181,8 @@ class Calendar(HTMLCalendar):
     def formatday(self, day, appointments):
         d = ''
         if day != 0:
+            current_day = date(self.year, self.month, day)
+            is_past = current_day < datetime.now().date()
             appointments_per_day = appointments.filter(day__day=day)
             for appointment in appointments_per_day:
                 d += f'''
@@ -190,11 +192,12 @@ class Calendar(HTMLCalendar):
                             <span class="client">{appointment.user.first_name} {appointment.user.last_name}</span>
                         </div>
                     '''
+            cell_class = 'past-day' if is_past else 'day-cell'
             return f'''
-                <td class = "day-cell">
+                <td class = "{cell_class}">
                     <div class="date-container">
                        <span class="date">{day}</span>
-                       <button class="add-appointment-btn" onclick="showAppointmentForm('{self.year}-{self.month:02d}-{day:02d}')">
+                       <button class="add-appointment-btn" onclick="showAppointmentForm('{self.year}-{self.month:02d}-{day:02d}')" style="display: { 'none' if is_past else 'block' }">
                            +
                        </button>
                     </div>
