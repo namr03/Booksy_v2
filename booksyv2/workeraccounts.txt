@@ -1,0 +1,8 @@
+hairdresser@example.com
+password123
+
+massage@example.com
+password123
+
+manicure@example.com
+password123

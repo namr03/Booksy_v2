@@ -22,8 +22,8 @@
                 <label for="service">Service</label>
                 <select name="service" id="service" required>
                     <option value="">Select a service</option>
-                    {% for service_code, service_name in services %}
-                        <option value="{{ service_code }}">{{ service_name }}</option>
+                    {% for service in services %}
+                        <option value="{{ service.id }}">{{ service.name }} - {{ service.price }}zł</option>
                     {% endfor %}
                 </select>
             </div>
@@ -55,7 +55,7 @@
                     <div class="appointment-item">
                         <div class="appointment-date">{{ appointment.day|date:"l, F j, Y" }}</div>
                         <div class="appointment-time">{{ appointment.time }}</div>
-                        <div class="appointment-service">{{ appointment.service }}</div>
+                        <div class="appointment-service">{{ appointment.service.name }} - {{ appointment.service.price }}zł</div>
                     </div>
                 {% endfor %}
             </div>

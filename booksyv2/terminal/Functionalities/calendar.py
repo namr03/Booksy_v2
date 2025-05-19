@@ -1,4 +1,4 @@
-from ..models import Appointment, SERVICE_CHOICE, TIME_CHOICES
+from ..models import Appointment, Service, TIME_CHOICES
 from datetime import datetime, timedelta, date
 from calendar import HTMLCalendar
 from django.views import generic
@@ -93,6 +93,6 @@ class CalendarView(generic.ListView):
         context['calendar'] = mark_safe(html_cal)
         context['prev_month'] = prev_month(d)
         context['next_month'] = next_month(d)
-        context['services'] = SERVICE_CHOICE
+        context['services'] = Service.objects.all()
         context['times'] = TIME_CHOICES
         return context

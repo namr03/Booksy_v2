@@ -11,44 +11,46 @@ def booking(request):
     appointments = Appointment.objects.filter(user=user)
     
     if request.method == 'POST':
-        service = request.POST.get('service')
+        service_id = request.POST.get('service')
         day = request.POST.get('day')
         time = request.POST.get('time')
+
         
-        # Validate if service and time are in allowed choices
-        valid_services = [choice[0] for choice in SERVICE_CHOICE]
-        valid_times = [choice[0] for choice in TIME_CHOICES]
-        
-        if service not in valid_services:
+        try:
+            service_obj = Service.objects.get(id=service_id)
+        except Service.DoesNotExist:
+            
+            
+            
+            
             messages.error(request, "Invalid service selected")
             return redirect('booking')
-            
+
+        valid_times = [choice[0] for choice in TIME_CHOICES]
         if time not in valid_times:
             messages.error(request, "Invalid time selected")
             return redirect('booking')
-            
-        # Check if appointment time is available
+
         if Appointment.objects.filter(day=day, time=time).exists():
             messages.error(request, "This time slot is already booked")
             return redirect('booking')
-            
-        # Create new appointment
+
         try:
             appointment = Appointment.objects.create(
                 user=user,
-                service=service,
+                service=service_obj,
                 day=datetime.strptime(day, '%Y-%m-%d').date(),
                 time=time,
                 time_ordered=datetime.now()
             )
-            messages.success(request, f"Successfully booked {service} for {day} at {time}")
+            messages.success(request, f"Successfully booked {service_obj.name} for {day} at {time}")
             return redirect('home')
         except Exception as e:
             messages.error(request, f"Booking failed: {str(e)}")
             return redirect('booking')
     
     context = {
-        'services': SERVICE_CHOICE,
+        'services': service_obj,
         'times': TIME_CHOICES,
         'appointments': appointments,
         'today': datetime.now().date()
@@ -59,7 +61,7 @@ def booking(request):
 @login_required
 def add_appointment(request):
     if request.method == 'POST':
-        service = request.POST.get('service')
+        service_id = request.POST.get('service')
         day = request.POST.get('day')
         time = request.POST.get('time')
         first_name = request.POST.get('first_name')
@@ -67,13 +69,13 @@ def add_appointment(request):
         email = request.POST.get('email')
         phone = request.POST.get('phone')
 
-        # Validate if service and time are in allowed choices
-        valid_services = [choice[0] for choice in SERVICE_CHOICE]
-        valid_times = [choice[0] for choice in TIME_CHOICES]
-        
-        if service not in valid_services:
+        try:
+            service_obj = Service.objects.get(id=service_id)
+        except Service.DoesNotExist:
             messages.error(request, "Invalid service selected")
-            return redirect('calendar')
+            return redirect('booking')
+            
+        valid_times = [choice[0] for choice in TIME_CHOICES]
             
         if time not in valid_times:
             messages.error(request, "Invalid time selected")
@@ -100,7 +102,7 @@ def add_appointment(request):
         try:
             appointment = Appointment.objects.create(
                 user=user,
-                service=service,
+                service=service_obj,
                 day=datetime.strptime(day, '%Y-%m-%d').date(),
                 time=time,
                 time_ordered=datetime.now()

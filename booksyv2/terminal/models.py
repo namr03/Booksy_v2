@@ -49,12 +49,6 @@ class MyUser(AbstractBaseUser):
     def __str__(self):
         return self.email
 
-SERVICE_CHOICE = (
-    ("Manicure","Manicure"),
-    ("Pedicure","Pedicure"),
-    ("Massage","Massage"),
-    ("Hair","Hair")
-)
 
 TIME_CHOICES = (
     ("10:00", "10:00"),
@@ -67,14 +61,22 @@ TIME_CHOICES = (
     ("17:00", "17:00"),
     ("18:00", "18:00"),
     ("19:00", "19:00"),
-    ("20:00", "20:00"),
 )
 
 class Appointment(models.Model):
-    user= models.ForeignKey(MyUser, on_delete=models.CASCADE, null=True, blank=True)
-    service = models.CharField(max_length=100, choices=SERVICE_CHOICE, default="Manicure")
+    user= models.ForeignKey(MyUser, on_delete=models.SET_NULL, null=True, blank=True)
+    service = models.ForeignKey('Service', on_delete=models.SET_NULL, null=True, blank=True)
     day = models.DateField(default=datetime.now)
     time = models.CharField(max_length=10, choices=TIME_CHOICES, default="10:00")
     time_ordered = models.DateTimeField(default=datetime.now,blank=True)
     def __str__(self):
         return f"{self.user.first_name} | day:{self.day} | time:{self.time}"
+    
+class Service(models.Model):
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField(blank=True, null=True)
+    workers = models.ManyToManyField(MyUser, related_name='services', blank=True)
+
+    def __str__(self):
+        return self.name
