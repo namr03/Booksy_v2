@@ -107,7 +107,7 @@ def add_appointment(request):
                 time=time,
                 time_ordered=datetime.now()
             )
-            messages.success(request, f"Successfully booked {service} for {day} at {time}")
+            messages.success(request, f"Successfully booked {service_obj.name} for {day} at {time}")
         except Exception as e:
             messages.error(request, f"Booking failed: {str(e)}")
             
