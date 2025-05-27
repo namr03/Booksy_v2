@@ -10,5 +10,6 @@ urlpatterns = [
     path('register/', Login.register_user, name='register'),
     path('booking/', Appointment_booking.booking, name='booking'),
     path('employee/', calendar.CalendarView.as_view(), name='calendar'),
-    path('add_appointment/', Appointment_booking.add_appointment,name = 'add_appointment')
+    path('add_appointment/', Appointment_booking.add_appointment,name = 'add_appointment'),
+    path('get-available-times/', views.get_available_times, name='get_available_times'),
     ]

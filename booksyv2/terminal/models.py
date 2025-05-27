@@ -77,6 +77,7 @@ class Service(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField(blank=True, null=True)
     workers = models.ManyToManyField(MyUser, related_name='services', blank=True)
+    duration = models.IntegerField(default=60, help_text="Duration in minutes")
 
     def __str__(self):
         return self.name

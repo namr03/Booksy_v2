@@ -326,6 +326,152 @@ body {
     padding: 20px;
 }
 
+/* Service selection styles */
+.service-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.service-card {
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.service-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.service-card.selected {
+    background-color: #e0f2f1;
+    border-color: #26a69a;
+}
+
+/* Date selection styles */
+.date-selection, .time-selection {
+    margin-top: 20px;
+    padding: 15px;
+    background: #1e1e1e;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.date-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.date-card {
+    padding: 10px;
+    text-align: center;
+    background: #2a2a2a;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #fff;
+    border: 1px solid #333;
+}
+
+.date-card:hover {
+    background: #333;
+    border-color: #00bcd4;
+}
+
+.date-card.selected {
+    background: #00bcd4;
+    color: white;
+    border-color: #00bcd4;
+}
+
+.date-card .weekday {
+    font-size: 0.9em;
+    color: #aaa;
+}
+
+.date-card .day {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.date-card .today-marker {
+    font-size: 0.8em;
+    color: #00bcd4;
+    margin-top: 5px;
+}
+
+.date-card.selected .weekday,
+.date-card.selected .today-marker {
+    color: white;
+}
+
+/* Time slot selection styles */
+.time-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.time-slot {
+    padding: 0.5rem;
+    text-align: center;
+    background: #2a2a2a;
+    border: 1px solid #333;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.time-slot:hover {
+    background: #333;
+    border-color: #00bcd4;
+}
+
+.time-slot.selected {
+    background: #00bcd4;
+    color: white;
+    border-color: #00bcd4;
+}
+
+/* Submit button styles */
+.submit-button {
+    width: 100%;
+    padding: 1rem;
+    background-color: #00bcd4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+}
+
+.submit-button:hover {
+    background-color: #0097a7;
+}
+
+.submit-button:disabled {
+    background-color: #333;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Section headers */
+.date-selection h3,
+.time-selection h3 {
+    color: #00bcd4;
+    margin-bottom: 15px;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .calendar-container {
