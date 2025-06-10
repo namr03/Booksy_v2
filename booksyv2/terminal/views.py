@@ -1,265 +1,97 @@
-from django.shortcuts import render,redirect
-from django.contrib.auth import login, authenticate, logout
-from django.contrib import messages
-from .forms import UserRegistrationForm
+from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import *
-from datetime import datetime, timedelta, date
-from calendar import HTMLCalendar
-from django.utils.safestring import mark_safe
-from django.views import generic
-import calendar
-import uuid
-
-#Those are registration, login and logout functions
-def register_user(request):
-    if request.method == 'POST':
-        form = UserRegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            user.backend = 'terminal.backends.EmailBackend'
-            login(request,user)
-            messages.success(request,"Registration succesful")
-            return redirect('home')
-        else:
-            messages.error(request,"Registration Failed")
-    else:
-        form = UserRegistrationForm()
-    return render(request, 'terminal/register.html',{'form': form})
-
-def login_user(request):
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        user = authenticate(request, email=email, password=password)
-        if user is not None and user.is_active:
-            if user.is_superuser:
-                login(request,user)
-                messages.success(request,'Login successfull as employee')
-                return redirect('calendar')
-            else:    
-                login(request,user)
-                messages.success(request,'Login successfull')
-                return redirect('home')
-        else:
-            messages.error(request,"Invalid email or password")
-    return render(request,'terminal/login.html')
-
-@login_required
-def logout_user(request):
-    logout(request)
-    messages.success(request, 'Logged out succesfully')
-    return redirect('login')
+from datetime import datetime, timedelta
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
 
 @login_required
 def home(request):
+    services = Service.objects.all()
     user = request.user
     appointments = Appointment.objects.filter(user=user).order_by('day','time')
-    context = {
-        'services': SERVICE_CHOICE,
-        'times': TIME_CHOICES,
-        'today': datetime.now().date(),
-        'appointments': appointments
-    }
-    return render(request, 'terminal/terminal.html', context)
-
-
-
-
-@login_required
-def booking(request):
-    user = request.user
-    appointments = Appointment.objects.filter(user=user)
     
-    if request.method == 'POST':
-        service = request.POST.get('service')
-        day = request.POST.get('day')
-        time = request.POST.get('time')
-        
-        # Validate if service and time are in allowed choices
-        valid_services = [choice[0] for choice in SERVICE_CHOICE]
-        valid_times = [choice[0] for choice in TIME_CHOICES]
-        
-        if service not in valid_services:
-            messages.error(request, "Invalid service selected")
-            return redirect('booking')
-            
-        if time not in valid_times:
-            messages.error(request, "Invalid time selected")
-            return redirect('booking')
-            
-        # Check if appointment time is available
-        if Appointment.objects.filter(day=day, time=time).exists():
-            messages.error(request, "This time slot is already booked")
-            return redirect('booking')
-            
-        # Create new appointment
-        try:
-            appointment = Appointment.objects.create(
-                user=user,
-                service=service,
-                day=datetime.strptime(day, '%Y-%m-%d').date(),
-                time=time,
-                time_ordered=datetime.now()
-            )
-            messages.success(request, f"Successfully booked {service} for {day} at {time}")
-            return redirect('home')
-        except Exception as e:
-            messages.error(request, f"Booking failed: {str(e)}")
-            return redirect('booking')
+    # Generate available dates for next 15 days
+    today = datetime.now()
+    available_dates = []
+    
+    for i in range(15):
+        current_date = today + timedelta(days=i)
+        available_dates.append({
+            'day': current_date.day,
+            'weekday': current_date.strftime('%a'),
+            'value': current_date.strftime('%Y-%m-%d'),
+            'today': i == 0
+        })
     
     context = {
-        'services': SERVICE_CHOICE,
+        'services': services,
         'times': TIME_CHOICES,
+        'today': today.date(),
         'appointments': appointments,
-        'today': datetime.now().date()
+        'available_dates': available_dates,
     }
-    
     return render(request, 'terminal/terminal.html', context)
 
-@login_required
-def add_appointment(request):
-    if request.method == 'POST':
-        service = request.POST.get('service')
-        day = request.POST.get('day')
-        time = request.POST.get('time')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        email = request.POST.get('email')
-        phone = request.POST.get('phone')
+@require_GET
+def get_available_times(request):
+    service_id = request.GET.get('service')
+    date = request.GET.get('date')
+    
+    # Get service duration and calculate available slots
+    service = Service.objects.get(id=service_id)
+    
+    # Different handling for manicure/pedicure vs other services
+    if service.name in ['Manicure', 'Pedicure']:
+        # Get all appointments for manicure and pedicure
+        manicure_pedicure_services = Service.objects.filter(name__in=['Manicure', 'Pedicure'])
+        booked_appointments = Appointment.objects.filter(
+            service__in=manicure_pedicure_services,
+            day=date
+        )
+    else:
+        # For other services, only check appointments for the same service
+        booked_appointments = Appointment.objects.filter(
+            service=service,
+            day=date
+        )
 
-        # Validate if service and time are in allowed choices
-        valid_services = [choice[0] for choice in SERVICE_CHOICE]
-        valid_times = [choice[0] for choice in TIME_CHOICES]
+    # Calculate blocked time slots
+    booked_slots = set()
+    for appointment in booked_appointments:
+        appointment_start = datetime.strptime(appointment.time, '%H:%M')
+        appointment_end = appointment_start + timedelta(minutes=appointment.service.duration)
         
-        if service not in valid_services:
-            messages.error(request, "Invalid service selected")
-            return redirect('calendar')
-            
-        if time not in valid_times:
-            messages.error(request, "Invalid time selected")
-            return redirect('calendar')
-            
-        # Check if appointment time is available
-        if Appointment.objects.filter(day=day, time=time).exists():
-            messages.error(request, "This time slot is already booked")
-            return redirect('calendar')
-        #Check if user exists if not, it creates new user
-        try:
-            user = MyUser.objects.get(email=email)
-        except MyUser.DoesNotExist:
-            temp_password = str(uuid.uuid4())[:8]
-            user = MyUser.objects.creating_user(
-                email=email,
-                first_name=first_name,
-                last_name=last_name,
-                phone_number=phone,
-                password=temp_password,
-            )
+        # Block all slots that overlap with this appointment
+        current = appointment_start
+        while current < appointment_end:
+            booked_slots.add(current.strftime('%H:%M'))
+            current += timedelta(minutes=30)
 
-        # Create new appointment
-        try:
-            appointment = Appointment.objects.create(
-                user=user,
-                service=service,
-                day=datetime.strptime(day, '%Y-%m-%d').date(),
-                time=time,
-                time_ordered=datetime.now()
-            )
-            messages.success(request, f"Successfully booked {service} for {day} at {time}")
-        except Exception as e:
-            messages.error(request, f"Booking failed: {str(e)}")
-            
-    return redirect('calendar')
-#Created class for Calendar with functions that format day, week and month
-class Calendar(HTMLCalendar):
-    def __init__(self, year = None, month = None):
-        self.year= year
-        self.month= month
-        super(Calendar,self).__init__()
+    # Generate all possible time slots
+    all_slots = []
+    start_time = datetime.strptime('10:00', '%H:%M')
+    end_time = datetime.strptime('20:00', '%H:%M')
+    slot_duration = timedelta(minutes=service.duration)
     
-    def formatday(self, day, appointments):
-        d = ''
-        if day != 0:
-            current_day = date(self.year, self.month, day)
-            is_past = current_day < datetime.now().date()
-            appointments_per_day = appointments.filter(day__day=day)
-            for appointment in appointments_per_day:
-                d += f'''
-                        <div class="appointment">
-                            <span class="time">{appointment.time}</span>
-                            <span class="service">{appointment.service}</span>
-                            <span class="client">{appointment.user.first_name} {appointment.user.last_name}</span>
-                        </div>
-                    '''
-            cell_class = 'past-day' if is_past else 'day-cell'
-            return f'''
-                <td class = "{cell_class}">
-                    <div class="date-container">
-                       <span class="date">{day}</span>
-                       <button class="add-appointment-btn" onclick="showAppointmentForm('{self.year}-{self.month:02d}-{day:02d}')" style="display: { 'none' if is_past else 'block' }">
-                           +
-                       </button>
-                    </div>
-                    <div class="appointments-container">
-                        {d}
-                    </div>
-                </td>
-            '''
-        return '<td></td>'
-    
-    def formatweek(self, theweek, appointments):
-        week = ''
-        for d,weekday in theweek:
-            week += self.formatday(d,appointments)
-        return f'<tr>{week}</tr>'
-    
-    def formatmonth(self,withyear = True):
-        appointments = Appointment.objects.filter(
-            day__year = self.year,
-            day__month = self.month
-        ).order_by('time')
+    current_slot = start_time
+    while current_slot + slot_duration <= end_time:
+        time_str = current_slot.strftime('%H:%M')
+        
+        # Check if slot is available
+        is_available = True
+        check_time = current_slot
+        while check_time < current_slot + slot_duration:
+            if check_time.strftime('%H:%M') in booked_slots:
+                is_available = False
+                break
+            check_time += timedelta(minutes=30)
+        
+        if is_available:
+            all_slots.append({
+                'value': time_str,
+                'display': time_str
+            })
+        current_slot += slot_duration
 
-        cal = f'<table class="calendar">\n'
-        cal += f'{self.formatmonthname(self.year,self.month, withyear=withyear)}\n'
-        cal += f'{self.formatweekheader()}\n'
-
-        for week in self.monthdays2calendar(self.year,self.month):
-            cal += f'{self.formatweek(week, appointments)}\n'
-
-        return cal
-    #It returns actual day or first day of the month
-def get_date(req_month):
-    if req_month:
-        year, month = (int(x) for x in req_month.split('-'))
-        return date(year,month,day=1)
-    return datetime.today()
-    #it checks previous month converting month as string to be use in URL
-def prev_month(d):
-    first = d.replace(day=1)
-    prev_month = first - timedelta(days=1)
-    month = 'month=' + str(prev_month.year) + '-' + str(prev_month.month)
-    return month
-    #Same as prev but next instead of previous
-def next_month(d):
-    days_in_month = calendar.monthrange(d.year, d.month)[1]
-    last = d.replace(day=days_in_month)
-    next_month = last + timedelta(days=1)
-    month = 'month=' + str(next_month.year) + '-' + str(next_month.month)
-    return month
-#Class for viewing calendar with appointments 
-class CalendarView(generic.ListView):
-    model = Appointment
-    template_name = 'terminal/employee_view.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        d = get_date(self.request.GET.get('month', None))
-        cal = Calendar(d.year, d.month)
-        html_cal = cal.formatmonth(withyear=True)
-        context['calendar'] = mark_safe(html_cal)
-        context['prev_month'] = prev_month(d)
-        context['next_month'] = next_month(d)
-        context['services'] = SERVICE_CHOICE
-        context['times'] = TIME_CHOICES
-        return context
+    return JsonResponse({'times': all_slots})

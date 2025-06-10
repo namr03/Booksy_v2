@@ -1,53 +1,147 @@
 {% extends 'terminal/base.html' %}
 
 {% block content %}
-<div class="container">
-    <div class="booking-section">
+<div class="auth-container">
+    <div class="auth-form booking-form">
         <h2>Book an Appointment</h2>
         
-        <form method="POST" action="{% url 'booking' %}" class="booking-form">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div class="service-selection">
+            <h3>Choose Service</h3>
+            <div class="service-grid">
+                {% for service in services %}
+                    <div class="service-card" data-service-id="{{ service.id }}" data-duration="{{ service.duration }}">
+                        <div class="service-name">{{ service.name }}</div>
+                        <div class="service-price">{{ service.price }}zł</div>
+                        <div class="service-duration">{{ service.duration }} min</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <form method="POST" action="{% url 'booking' %}" id="bookingForm" class="booking-steps" style="display: none;">
             {% csrf_token %}
+            <input type="hidden" name="service" id="selectedService">
             
-            <div class="form-group">
-                <label for="service">Service:</label>
-                <select name="service" id="service" required>
-                    <option value="">Select a service</option>
-                    {% for service_code, service_name in services %}
-                        <option value="{{ service_code }}">{{ service_name }}</option>
+            <div class="date-selection" style="display: none;">
+                <h3>Select Date</h3>
+                <div class="date-grid">
+                    {% for date in available_dates %}
+                        <div class="date-card" data-date="{{ date.value }}">
+                            <div class="weekday">{{ date.weekday }}</div>
+                            <div class="day">{{ date.day }}</div>
+                            {% if date.today %}<div class="today-marker">Today</div>{% endif %}
+                        </div>
                     {% endfor %}
-                </select>
+                </div>
+                <input type="hidden" name="day" id="selectedDate">
+            </div>
+
+            <div class="time-selection" style="display: none;">
+                <h3>Select Time</h3>
+                <div class="time-grid" id="timeSlots"></div>
+                <input type="hidden" name="time" id="selectedTime">
             </div>
             
-            <div class="form-group">
-                <label for="day">Date:</label>
-                <input type="date" name="day" id="day" required min="{{ today|date:'Y-m-d' }}">
-            </div>
-            
-            <div class="form-group">
-                <label for="time">Time:</label>
-                <select name="time" id="time" required>
-                    <option value="">Select a time</option>
-                    {% for time_value, time_display in times %}
-                        <option value="{{ time_value }}">{{ time_display }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <button type="submit">Book Appointment</button>
+            <button type="submit" class="submit-button" disabled>Book Appointment</button>
         </form>
     </div>
 
-    {% if appointments %}
-    <div class="appointments-section">
-        <h3>My Appointments</h3>
-        <ul class="appointments-list">
-            {% for appointment in appointments %}
-                <li>
-                    {{ appointment.service }} on {{ appointment.day }} at {{ appointment.time }}
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
+    
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const serviceCards = document.querySelectorAll('.service-card');
+    const bookingForm = document.getElementById('bookingForm');
+    const dateSelection = document.querySelector('.date-selection');
+    const dateCards = document.querySelectorAll('.date-card');
+    const timeSelection = document.querySelector('.time-selection');
+    const timeGrid = document.getElementById('timeSlots');
+    const submitButton = document.querySelector('.submit-button');
+    const selectedServiceInput = document.getElementById('selectedService');
+    const selectedDateInput = document.getElementById('selectedDate');
+    const selectedTimeInput = document.getElementById('selectedTime');
+
+    // Service selection
+    serviceCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Reset previous selections
+            serviceCards.forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+            
+            // Show form and date selection
+            selectedServiceInput.value = this.dataset.serviceId;
+            bookingForm.style.display = 'block';
+            dateSelection.style.display = 'block';
+            timeSelection.style.display = 'none';
+            
+            // Reset other selections
+            resetDateAndTimeSelections();
+            submitButton.disabled = true;
+            
+            console.log('Service selected:', this.dataset.serviceId); // Debug log
+        });
+    });
+
+    // Date selection
+    dateCards.forEach(card => {
+        card.addEventListener('click', function() {
+            console.log('Date clicked:', this.dataset.date); // Debug log
+            dateCards.forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedDateInput.value = this.dataset.date;
+            
+            if (selectedServiceInput.value) {
+                fetchTimeSlots(selectedServiceInput.value, this.dataset.date);
+            }
+        });
+    });
+
+    function fetchTimeSlots(serviceId, date) {
+        console.log('Fetching time slots for:', serviceId, date); // Debug log
+        fetch(`/get-available-times/?service=${serviceId}&date=${date}`)
+            .then(response => response.json())
+            .then(data => {
+                timeGrid.innerHTML = '';
+                timeSelection.style.display = 'block';
+                
+                data.times.forEach(time => {
+                    const timeSlot = document.createElement('div');
+                    timeSlot.className = 'time-slot';
+                    timeSlot.textContent = time.display;
+                    timeSlot.dataset.time = time.value;
+                    
+                    timeSlot.addEventListener('click', function() {
+                        document.querySelectorAll('.time-slot').forEach(ts => 
+                            ts.classList.remove('selected'));
+                        this.classList.add('selected');
+                        selectedTimeInput.value = this.dataset.time;
+                        submitButton.disabled = false;
+                    });
+                    
+                    timeGrid.appendChild(timeSlot);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function resetDateAndTimeSelections() {
+        dateCards.forEach(card => card.classList.remove('selected'));
+        selectedDateInput.value = '';
+        selectedTimeInput.value = '';
+        timeGrid.innerHTML = '';
+        timeSelection.style.display = 'none';
+    }
+});
+</script>
 {% endblock %}

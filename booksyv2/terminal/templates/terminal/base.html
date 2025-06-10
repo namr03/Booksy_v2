@@ -3,25 +3,19 @@
 <head>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <title>{% block title %}Terminal{% endblock %}</title>
+    <title>{% block title %}Booking System{% endblock %}</title>
     {% load static %}
 </head>
 <body>
     <nav>
-            {% if user.is_authenticated %}
-                <a href="{% url 'logout' %}">Logout</a>
-            {% endif %}
+        {% if user.is_authenticated %}
+            <div class="nav-container">
+                <a href="{% url 'booking' %}" class="nav-link {% if request.resolver_match.url_name == 'booking' or request.resolver_match.url_name == 'home' %}active{% endif %}">Book Appointment</a>
+                <a href="{% url 'appointments' %}" class="nav-link {% if request.resolver_match.url_name == 'appointments' %}active{% endif %}">My Appointments</a>
+                <a href="{% url 'logout' %}" class="nav-link {% if request.resolver_match.url_name == 'logout' %}active{% endif %}">Logout</a>
+            </div>
+        {% endif %}
     </nav>
-
-    {% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-        <div class="message {{ message.tags }}">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
 
     <main>
         {% block content %}
