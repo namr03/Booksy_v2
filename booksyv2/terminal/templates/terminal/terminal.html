@@ -54,22 +54,7 @@
         </form>
     </div>
 
-    <div class="auth-form appointments-list">
-        <h2>My Appointments</h2>
-        {% if appointments %}
-            <div class="appointments-container">
-                {% for appointment in appointments %}
-                    <div class="appointment-item">
-                        <div class="appointment-date">{{ appointment.day|date:"l, F j, Y" }}</div>
-                        <div class="appointment-time">{{ appointment.time }}</div>
-                        <div class="appointment-service">{{ appointment.service.name }} - {{ appointment.service.price }}zł</div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p class="no-appointments">No appointments scheduled</p>
-        {% endif %}
-    </div>
+    
 </div>
 {% endblock %}
 

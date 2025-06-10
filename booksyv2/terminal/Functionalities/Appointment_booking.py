@@ -2,40 +2,35 @@ from django.shortcuts import render,redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from ..models import *
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 
 @login_required
 def booking(request):
     user = request.user
     appointments = Appointment.objects.filter(user=user)
+    services = Service.objects.all()  # Get all available services
+    today = datetime.now()
+    
+    # Generate available dates
+    available_dates = []
+    for i in range(15):
+        current_date = today + timedelta(days=i)
+        available_dates.append({
+            'day': current_date.day,
+            'weekday': current_date.strftime('%a'),
+            'value': current_date.strftime('%Y-%m-%d'),
+            'today': i == 0
+        })
     
     if request.method == 'POST':
         service_id = request.POST.get('service')
         day = request.POST.get('day')
         time = request.POST.get('time')
-
-        
         try:
             service_obj = Service.objects.get(id=service_id)
-        except Service.DoesNotExist:
             
-            
-            
-            
-            messages.error(request, "Invalid service selected")
-            return redirect('booking')
-
-        valid_times = [choice[0] for choice in TIME_CHOICES]
-        if time not in valid_times:
-            messages.error(request, "Invalid time selected")
-            return redirect('booking')
-
-        if Appointment.objects.filter(day=day, time=time).exists():
-            messages.error(request, "This time slot is already booked")
-            return redirect('booking')
-
-        try:
+            # Create appointment
             appointment = Appointment.objects.create(
                 user=user,
                 service=service_obj,
@@ -44,16 +39,16 @@ def booking(request):
                 time_ordered=datetime.now()
             )
             messages.success(request, f"Successfully booked {service_obj.name} for {day} at {time}")
-            return redirect('home')
+            return redirect('appointments')
         except Exception as e:
             messages.error(request, f"Booking failed: {str(e)}")
             return redirect('booking')
     
     context = {
-        'services': service_obj,
-        'times': TIME_CHOICES,
+        'services': services,  # Changed from service_obj to services
         'appointments': appointments,
-        'today': datetime.now().date()
+        'available_dates': available_dates,
+        'today': today.date()
     }
     
     return render(request, 'terminal/terminal.html', context)
@@ -112,3 +107,12 @@ def add_appointment(request):
             messages.error(request, f"Booking failed: {str(e)}")
             
     return redirect('calendar')
+
+@login_required
+def appointments(request):
+    user_appointments = Appointment.objects.filter(user=request.user).order_by('day', 'time')
+    
+    context = {
+        'appointments': user_appointments
+    }
+    return render(request, 'terminal/my_appointments.html', context)
