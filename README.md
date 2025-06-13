@@ -24,6 +24,7 @@
 - Rozbudowa panelu klienta o możliwość anulowania wizyt oraz automatyczne usuwanie byłych wizyt
 - Możliwość edycji danych klienta z poziomu panelu
 - Implementacja RWD
+- Konteneryzacja Docker
 
 ## 🚀 Uruchomienie projektu lokalnie
 
