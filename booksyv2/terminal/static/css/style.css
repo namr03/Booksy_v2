@@ -75,6 +75,7 @@ body {
 /* Past days styling */
 .calendar tbody td.past-day {
     background-color: #161616 !important;
+    color: white;
 }
 
 /* Appointment styling */
@@ -86,9 +87,16 @@ body {
     color: #fff;
 }
 
+.appointment.worker-appointment {
+    background: #d1ffd1;
+    border: 2px solid #4caf50;
+    color: #333;
+}
+
 .past-day .appointment {
     opacity: 0.5;
     background-color: #202020 !important;
+    color: white;
 }
 
 /* Add appointment button */
