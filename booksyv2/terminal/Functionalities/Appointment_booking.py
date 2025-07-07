@@ -110,9 +110,32 @@ def add_appointment(request):
 
 @login_required
 def appointments(request):
-    user_appointments = Appointment.objects.filter(user=request.user).order_by('day', 'time')
+    today = datetime.now().date()
+    
+    # Get future appointments
+    future_appointments = Appointment.objects.filter(
+        user=request.user,
+        day__gte=today
+    ).order_by('day', 'time')
+    
+    # Get past appointments
+    past_appointments = Appointment.objects.filter(
+        user=request.user,
+        day__lt=today
+    ).order_by('-day', '-time')  # Note the minus for reverse chronological order
     
     context = {
-        'appointments': user_appointments
+        'future_appointments': future_appointments,
+        'past_appointments': past_appointments
     }
     return render(request, 'terminal/my_appointments.html', context)
+
+@login_required
+def cancel_appointment(request, appointment_id):
+    appointment = Appointment.objects.filter(id=appointment_id, user=request.user).first()
+    if appointment:
+        appointment.delete()
+        messages.success(request, "Appointment cancelled successfully.")
+    else:
+        messages.error(request, "Appointment not found or not authorized.")
+    return redirect('appointments')
