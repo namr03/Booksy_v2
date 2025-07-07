@@ -1,0 +1,38 @@
+{% extends 'terminal/base.html' %}
+
+{% block content %}
+<div class="auth-container edit">
+    <div class="auth-form">
+        <h2>Edit Profile</h2>
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <!-- Formularz zmiany danych -->
+        <form method="POST" action="{% url 'edit_profile' %}">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="profile">
+            <label>First name:</label>
+            <input type="text" name="first_name" value="{{ user.first_name }}" required>
+            <label>Last name:</label>
+            <input type="text" name="last_name" value="{{ user.last_name }}" required>
+            <label>Email:</label>
+            <input type="email" name="email" value="{{ user.email }}" required> <br><br>
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
+    <div class="auth-form" style="margin-top: 2rem;">
+        <h3>Change Password</h3>
+        <!-- Formularz zmiany hasła -->
+        <form method="POST" action="{% url 'edit_profile' %}">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="password">
+            {{ password_form.as_p }}
+            <button type="submit">Change Password</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

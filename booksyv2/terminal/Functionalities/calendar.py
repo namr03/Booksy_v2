@@ -6,9 +6,10 @@ from django.utils.safestring import mark_safe
 import calendar
 
 class Calendar(HTMLCalendar):
-    def __init__(self, year = None, month = None):
+    def __init__(self, year = None, month = None, user = None):
         self.year= year
         self.month= month
+        self.user = user
         super(Calendar,self).__init__()
     
     def formatday(self, day, appointments):
@@ -18,8 +19,12 @@ class Calendar(HTMLCalendar):
             is_past = current_day < datetime.now().date()
             appointments_per_day = appointments.filter(day__day=day)
             for appointment in appointments_per_day:
+                is_worker = self.user in appointment.service.workers.all()
+                appointment_class = "appointment"
+                if is_worker:
+                    appointment_class += " worker-appointment"
                 d += f'''
-                        <div class="appointment">
+                        <div class="{appointment_class}">
                             <span class="time">{appointment.time}</span>
                             <span class="service">{appointment.service}</span>
                             <span class="client">{appointment.user.first_name} {appointment.user.last_name}</span>
@@ -88,7 +93,7 @@ class CalendarView(generic.ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         d = get_date(self.request.GET.get('month', None))
-        cal = Calendar(d.year, d.month)
+        cal = Calendar(d.year, d.month, user=self.request.user)
         html_cal = cal.formatmonth(withyear=True)
         context['calendar'] = mark_safe(html_cal)
         context['prev_month'] = prev_month(d)

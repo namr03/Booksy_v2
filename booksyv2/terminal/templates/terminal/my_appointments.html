@@ -1,22 +1,44 @@
 {% extends 'terminal/base.html' %}
 
 {% block content %}
-<div class="auth-container">
-    <div class="auth-form appointments-list">
-        <h2>My Appointments</h2>
-        {% if appointments %}
-            <div class="appointments-container">
-                {% for appointment in appointments %}
-                    <div class="appointment-item">
-                        <div class="appointment-date">{{ appointment.day|date:"l, F j, Y" }}</div>
-                        <div class="appointment-time">{{ appointment.time }}</div>
-                        <div class="appointment-service">{{ appointment.service.name }} - {{ appointment.service.price }}zł</div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p class="no-appointments">No appointments scheduled</p>
-        {% endif %}
+<div class="auth-container appointment">
+    <div class="appointments-flex">
+        <div class="auth-form appointments-list future-block">
+            <h2>Upcoming Appointments</h2>
+            {% if future_appointments %}
+                <div class="appointments-container">
+                    {% for appointment in future_appointments %}
+                        <div class="appointment-item future">
+                            <div class="appointment-date">{{ appointment.day|date:"l, F j, Y" }}</div>
+                            <div class="appointment-time">{{ appointment.time }}</div>
+                            <div class="appointment-service">{{ appointment.service.name }} - {{ appointment.service.price }}zł</div>
+                            <form method="POST" action="{% url 'cancel_appointment' appointment.id %}" style="margin-top:10px;">
+                                {% csrf_token %}
+                                <button type="submit" class="cancel-btn">Cancel Appointment</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-appointments">No upcoming appointments</p>
+            {% endif %}
+        </div>
+        <div class="auth-form appointments-list past-block">
+            <h2 class="past-header">Past Appointments</h2>
+            {% if past_appointments %}
+                <div class="appointments-container past">
+                    {% for appointment in past_appointments %}
+                        <div class="appointment-item past">
+                            <div class="appointment-date">{{ appointment.day|date:"l, F j, Y" }}</div>
+                            <div class="appointment-time">{{ appointment.time }}</div>
+                            <div class="appointment-service">{{ appointment.service.name }} - {{ appointment.service.price }}zł</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-appointments">No past appointments</p>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

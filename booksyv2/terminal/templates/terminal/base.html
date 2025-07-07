@@ -8,10 +8,15 @@
 </head>
 <body>
     <nav>
-        {% if user.is_authenticated %}
+        {% if user.is_authenticated and user.is_superuser == False %}
             <div class="nav-container">
                 <a href="{% url 'booking' %}" class="nav-link {% if request.resolver_match.url_name == 'booking' or request.resolver_match.url_name == 'home' %}active{% endif %}">Book Appointment</a>
                 <a href="{% url 'appointments' %}" class="nav-link {% if request.resolver_match.url_name == 'appointments' %}active{% endif %}">My Appointments</a>
+                <a href="{% url 'edit_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'edit_profile' %}active{% endif %}">Edit Profile</a>
+                <a href="{% url 'logout' %}" class="nav-link {% if request.resolver_match.url_name == 'logout' %}active{% endif %}">Logout</a>
+            </div>
+        {% elif user.is_authenticated and user.is_superuser %}
+            <div class="nav-container">
                 <a href="{% url 'logout' %}" class="nav-link {% if request.resolver_match.url_name == 'logout' %}active{% endif %}">Logout</a>
             </div>
         {% endif %}

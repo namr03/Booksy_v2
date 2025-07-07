@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 from .Functionalities import Login,calendar,Appointment_booking
-
+from .Functionalities import editting_account
 
 urlpatterns = [
     path('home/', views.home,name='home'),
@@ -13,4 +13,6 @@ urlpatterns = [
     path('add_appointment/', Appointment_booking.add_appointment,name = 'add_appointment'),
     path('appointments/', Appointment_booking.appointments, name='appointments'),
     path('get-available-times/', views.get_available_times, name='get_available_times'),
+    path('cancel_appointment/<int:appointment_id>/', Appointment_booking.cancel_appointment, name='cancel_appointment'),
+    path('edit_profile/', editting_account.edit_profile, name='edit_profile'),
     ]
