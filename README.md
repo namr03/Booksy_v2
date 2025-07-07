@@ -18,10 +18,10 @@
 - Obsługa usług i terminów
 - System rezerwacji wizyt
 - Panel klienta z historią wizyt
+- Rozbudowa panelu klienta o możliwość anulowania wizyt
 
 ### 🔄 W planach:
 - System powiadomień e-mailowych
-- Rozbudowa panelu klienta o możliwość anulowania wizyt oraz automatyczne usuwanie byłych wizyt
 - Możliwość edycji danych klienta z poziomu panelu
 - Implementacja RWD
 - Konteneryzacja Docker
