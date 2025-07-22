@@ -1,3 +1,5 @@
+Logins for superusers 
+
 hairdresser@example.com
 password123
 
