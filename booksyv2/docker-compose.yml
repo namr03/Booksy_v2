@@ -9,6 +9,8 @@ services:
       - backend
     volumes:
       - ./frontend/static:/usr/share/nginx/html/static
+    networks:
+      - app_network
 
   backend:
     build: 
@@ -23,6 +25,9 @@ services:
     ports:
       - "8000:8000"
     command: gunicorn booksyv2.wsgi:application --bind 0.0.0.0:8000
+    networks:
+      - app_network
 
-volumes:
-  static_volume:
+networks:
+  app_network:
+    driver: bridge
