@@ -505,9 +505,39 @@ body {
 
 /* Section headers */
 .date-selection h3,
-.time-selection h3 {
+.time-selection h3,
+.service-selection h3 {
     color: #00bcd4;
     margin-bottom: 15px;
+}
+
+/* Password hints styles */
+.password-hints {
+    background-color: #2a2a2a;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 10px 0;
+    font-size: 0.9em;
+    color: #fff;
+}
+
+.password-hints ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 5px 0;
+}
+
+.password-hints li {
+    margin: 3px 0;
+    display: flex;
+    align-items: center;
+}
+
+.password-hints li::before {
+    content: "•";
+    color: #00bcd4;
+    margin-right: 8px;
+    font-size: 1.2em;
 }
 
 /* Responsive design */

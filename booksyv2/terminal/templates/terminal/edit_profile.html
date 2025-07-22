@@ -25,12 +25,34 @@
         </form>
     </div>
     <div class="auth-form" style="margin-top: 2rem;">
-        <h3>Change Password</h3>
+        <h2>Change Password</h2>
         <!-- Formularz zmiany hasła -->
         <form method="POST" action="{% url 'edit_profile' %}">
             {% csrf_token %}
             <input type="hidden" name="form_type" value="password">
-            {{ password_form.as_p }}
+            {% for field in password_form %}
+                <div class="form-field">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.name == 'new_password1' %}
+                        <div class="password-hints">
+                            <strong>Your password must contain:</strong>
+                            <ul>
+                                <li>At least 8 characters</li>
+                                <li>Letters and numbers</li>
+                                <li>At least one special character</li>
+                                <li>Both uppercase and lowercase letters</li>
+                            </ul>
+                        </div>
+                    {% endif %}
+                    {% if field.errors %}
+                        {% for error in field.errors %}
+                            <div class="error-message">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <br>
             <button type="submit">Change Password</button>
         </form>
     </div>

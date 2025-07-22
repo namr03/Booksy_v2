@@ -15,7 +15,28 @@
         {% endif %}
         <form method="POST">
             {% csrf_token %}
-            {{ form.as_p }}
+            {% for field in form %}
+                <div class="form-field">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.name == 'password1' %}
+                        <div class="password-hints">
+                            <strong>Your password must contain:</strong>
+                            <ul>
+                                <li>At least 8 characters</li>
+                                <li>Letters and numbers</li>
+                                <li>At least one special character</li>
+                                <li>Both uppercase and lowercase letters</li>
+                            </ul>
+                        </div>
+                    {% endif %}
+                    {% if field.errors %}
+                        {% for error in field.errors %}
+                            <div class="error-message">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            {% endfor %}
             <button type="submit">Register</button>
         </form><br>
         <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
