@@ -1,20 +1,28 @@
 services:
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
       - "80:80"
     depends_on:
       - backend
     volumes:
-      - static_volume:/usr/share/nginx/html/static
+      - ./frontend/static:/usr/share/nginx/html/static
 
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
     environment:
-      - DEBUG=0
+      - DEBUG=1
+      - DJANGO_SETTINGS_MODULE=booksyv2.settings
     volumes:
-      - static_volume:/app/staticfiles
-      - ./backend/db.sqlite3:/app/db.sqlite3  # Mount SQLite database file
+      - ./backend:/app
+      - ./backend/db.sqlite3:/app/db.sqlite3
+    ports:
+      - "8000:8000"
+    command: gunicorn booksyv2.wsgi:application --bind 0.0.0.0:8000
 
 volumes:
   static_volume:
